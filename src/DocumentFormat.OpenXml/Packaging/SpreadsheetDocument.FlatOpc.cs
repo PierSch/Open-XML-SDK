@@ -41,6 +41,7 @@ namespace DocumentFormat.OpenXml.Packaging
         /// <param name="document">The workbook in Flat OPC format.</param>
         /// <param name="stream">The stream on which the SpreadsheetDocument will be created.</param>
         /// <param name="isEditable">In ReadWrite mode. False for Read only mode.</param>
+        /// <param name="openSettings"></param>
         /// <returns>A new instance of SpreadsheetDocument.</returns>
         public static SpreadsheetDocument FromFlatOpcDocument(XDocument document, Stream stream, bool isEditable)
         {
