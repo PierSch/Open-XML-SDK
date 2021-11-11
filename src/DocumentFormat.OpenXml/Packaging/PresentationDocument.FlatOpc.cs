@@ -41,6 +41,7 @@ namespace DocumentFormat.OpenXml.Packaging
         /// <param name="document">The presentation in Flat OPC format.</param>
         /// <param name="stream">The stream on which the PresentationDocument will be created.</param>
         /// <param name="isEditable">In ReadWrite mode. False for Read only mode.</param>
+        /// <param name="openSettings"></param>
         /// <returns>A new instance of PresentationDocument.</returns>
         public static PresentationDocument FromFlatOpcDocument(XDocument document, Stream stream, bool isEditable)
         {
@@ -54,7 +55,7 @@ namespace DocumentFormat.OpenXml.Packaging
                 throw new ArgumentNullException(nameof(stream));
             }
 
-            return Open(FromFlatOpcDocumentCore(document, stream), isEditable);
+            return Open(FromFlatOpcDocumentCore(document, stream, new FlatOpcSettings()), isEditable);
         }
 
         /// <summary>
