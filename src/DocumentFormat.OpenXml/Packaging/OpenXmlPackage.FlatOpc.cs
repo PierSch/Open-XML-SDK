@@ -164,12 +164,31 @@ namespace DocumentFormat.OpenXml.Packaging
         /// </summary>
         /// <param name="flatOpcDocument">The document in Flat OPC format.</param>
         /// <param name="stream">The <see cref="Stream"/> on which to store the OpenXml package.</param>
+        /// <param name="openSettings"></param>
         /// <returns>The <see cref="Stream"/> containing the OpenXml package.</returns>
         protected static Stream FromFlatOpcDocumentCore(XDocument flatOpcDocument, Stream stream)
         {
             using (Package package = Package.Open(stream, FileMode.Create, FileAccess.ReadWrite))
             {
-                FromFlatOpcDocumentCore(flatOpcDocument, package);
+                FromFlatOpcDocumentCore(flatOpcDocument, package, new FlatOpcSettings());
+            }
+
+            return stream;
+        }
+
+        /// <summary>
+        /// Converts an <see cref="XDocument"/> in Flat OPC format to an OpenXml package
+        /// stored on a <see cref="Stream"/>.
+        /// </summary>
+        /// <param name="flatOpcDocument">The document in Flat OPC format.</param>
+        /// <param name="stream">The <see cref="Stream"/> on which to store the OpenXml package.</param>
+        /// <param name="flatOpcSettings"></param>
+        /// <returns>The <see cref="Stream"/> containing the OpenXml package.</returns>
+        protected static Stream FromFlatOpcDocumentCore(XDocument flatOpcDocument, Stream stream, FlatOpcSettings flatOpcSettings)
+        {
+            using (Package package = Package.Open(stream, FileMode.Create, FileAccess.ReadWrite))
+            {
+                FromFlatOpcDocumentCore(flatOpcDocument, package, flatOpcSettings);
             }
 
             return stream;
@@ -181,12 +200,32 @@ namespace DocumentFormat.OpenXml.Packaging
         /// </summary>
         /// <param name="flatOpcDocument">The document in Flat OPC format.</param>
         /// <param name="path">The path and file name of the file in which to store the OpenXml package.</param>
+        /// <param name="flatOpcSettings"></param>
         /// <returns>The path and file name of the file containing the OpenXml package.</returns>
         protected static string FromFlatOpcDocumentCore(XDocument flatOpcDocument, string path)
         {
             using (Package package = Package.Open(path, FileMode.Create, FileAccess.ReadWrite, FileShare.None))
             {
-                FromFlatOpcDocumentCore(flatOpcDocument, package);
+                FromFlatOpcDocumentCore(flatOpcDocument, package, new FlatOpcSettings());
+            }
+
+            return path;
+        }
+
+        /// <summary>
+        /// Converts an <see cref="XDocument"/> in Flat OPC format to an OpenXml package
+        /// stored in a file.
+        /// </summary>
+        /// <param name="flatOpcDocument">The document in Flat OPC format.</param>
+        /// <param name="path">The path and file name of the file in which to store the OpenXml package.</param>
+        /// <param name="flatOpcSettings"></param>
+        /// <returns>The path and file name of the file containing the OpenXml package.</returns>
+        protected static string FromFlatOpcDocumentCore(XDocument flatOpcDocument, string path,
+                                                        FlatOpcSettings flatOpcSettings)
+        {
+            using (Package package = Package.Open(path, FileMode.Create, FileAccess.ReadWrite, FileShare.None))
+            {
+                FromFlatOpcDocumentCore(flatOpcDocument, package, flatOpcSettings);
             }
 
             return path;
@@ -200,6 +239,18 @@ namespace DocumentFormat.OpenXml.Packaging
         /// <param name="package">The <see cref="Package"/> in which to store the OpenXml package.</param>
         /// <returns>The <see cref="Package"/> containing the OpenXml package.</returns>
         protected static Package FromFlatOpcDocumentCore(XDocument flatOpcDocument, Package package)
+        {
+            return FromFlatOpcDocumentCore(flatOpcDocument, package, new FlatOpcSettings());
+        }
+
+        /// <summary>
+        /// Converts an <see cref="XDocument"/> in Flat OPC format to an OpenXml package
+        /// stored in a <see cref="Package"/>.
+        /// </summary>
+        /// <param name="flatOpcDocument">The document in Flat OPC format.</param>
+        /// <param name="package">The <see cref="Package"/> in which to store the OpenXml package.</param>
+        /// <returns>The <see cref="Package"/> containing the OpenXml package.</returns>
+        protected static Package FromFlatOpcDocumentCore(XDocument flatOpcDocument, Package package, FlatOpcSettings flatOpcSettings)
         {
             if (flatOpcDocument is null)
             {
@@ -218,7 +269,7 @@ namespace DocumentFormat.OpenXml.Packaging
 
             // Add package parts and relationships.
             AddPackageParts(flatOpcDocument.Root, package);
-            AddPackageRelationships(flatOpcDocument.Root, package);
+            AddPackageRelationships(flatOpcDocument.Root, package, flatOpcSettings);
 
             // Save contents of all parts and relationships contained in package.
             package.Flush();
@@ -300,7 +351,7 @@ namespace DocumentFormat.OpenXml.Packaging
             return Convert.FromBase64CharArray(base64CharArray, 0, base64CharArray.Length);
         }
 
-        private static void AddPackageRelationships(XElement flatOpcPackage, Package package)
+        private static void AddPackageRelationships(XElement flatOpcPackage, Package package, FlatOpcSettings flatOpcSettings)
         {
             IEnumerable<XElement> flatOpcRelationshipParts = flatOpcPackage
                 .Elements()
@@ -315,7 +366,7 @@ namespace DocumentFormat.OpenXml.Packaging
                 }
                 else
                 {
-                    AddPartLevelRelationships(flatOpcRelationshipPart, package);
+                    AddPartLevelRelationships(flatOpcRelationshipPart, package, flatOpcSettings);
                 }
             }
         }
@@ -345,9 +396,13 @@ namespace DocumentFormat.OpenXml.Packaging
             }
         }
 
-        private static void AddPartLevelRelationships(XElement flatOpcRelationshipPart, Package package)
+        private static void AddPartLevelRelationships(XElement flatOpcRelationshipPart, Package package, FlatOpcSettings flatOpcSettings)
         {
+            XDocument document = new XDocument(flatOpcRelationshipPart);
+            var handler = flatOpcSettings?.RelationshipErrorHandlerFactory?.Invoke(document);
+
             PackagePart sourcePart = GetSourcePart(flatOpcRelationshipPart, package);
+
 
             foreach (XElement relationship in flatOpcRelationshipPart.Descendants(Rel + "Relationship"))
             {
@@ -363,6 +418,7 @@ namespace DocumentFormat.OpenXml.Packaging
 
                 if (targetMode == "External")
                 {
+                    target = handler?.Handle(target) ?? target;
                     sourcePart.CreateRelationship(new Uri(target, UriKind.Absolute), TargetMode.External, type, id);
                 }
                 else
