@@ -74,7 +74,7 @@ namespace DocumentFormat.OpenXml.Packaging
             {
                 var loadedParts = new Dictionary<Uri, OpenXmlPart>();
                 var hasMainPart = false;
-                var relationshipCollection = new PackageRelationshipPropertyCollection(package);
+                var relationshipCollection = new PackageRelationshipPropertyCollection(package, Features.GetNamespaceResolver());
 
                 // relationCollection.StrictRelationshipFound is true when this collection contains Transitional relationships converted from Strict.
                 StrictRelationshipFound = relationshipCollection.StrictRelationshipFound;
@@ -639,7 +639,7 @@ namespace DocumentFormat.OpenXml.Packaging
                     // For Package: Invoking UpdateRelationshipTypesInPackage() changes the relationship types in the package.
                     // We need to new PackageRelationshipPropertyCollection to read through the package contents right here
                     // because some operation may have updated the package before we get here.
-                    relationshipCollection = new PackageRelationshipPropertyCollection(_package);
+                    relationshipCollection = new PackageRelationshipPropertyCollection(_package, Features.GetNamespaceResolver());
                     relationshipCollection.UpdateRelationshipTypesInPackage();
                 }
             }
@@ -656,7 +656,7 @@ namespace DocumentFormat.OpenXml.Packaging
                 // For PackagePart: Invoking UpdateRelationshipTypesInPackage() changes the relationship types in the package part.
                 // We need to new PackageRelationshipPropertyCollection to read through the package part contents right here
                 // because some operation may have updated the package part before we get here.
-                relationshipCollection = new PackagePartRelationshipPropertyCollection(part.PackagePart);
+                relationshipCollection = new PackagePartRelationshipPropertyCollection(part.PackagePart, part.Features.GetNamespaceResolver());
                 relationshipCollection.UpdateRelationshipTypesInPackage();
 
                 // For ISO Strict documents, we read and save the part anyway to translate the contents. The contents are translated when PartRootElement is being loaded.
@@ -744,7 +744,7 @@ namespace DocumentFormat.OpenXml.Packaging
         /// </summary>
         /// <typeparam name="T">The type of the document's main part.</typeparam>
         /// <remarks>The MainDocumentPart will be changed.</remarks>
-        internal void ChangeDocumentTypeInternal<T>()
+        internal void ChangeDocumentTypeInternal<T>(Func<T> activator)
             where T : OpenXmlPart
         {
             ThrowIfObjectDisposed();
@@ -780,7 +780,7 @@ namespace DocumentFormat.OpenXml.Packaging
                     mainPart.Destroy();
 
                     // create new part
-                    T newMainPart = ClassActivator.CreateInstance<T>();
+                    T newMainPart = activator();
 
                     // do not call this.InitPart( ).  copy the code here
                     newMainPart.CreateInternal2(this, null, MainPartContentType, uri);

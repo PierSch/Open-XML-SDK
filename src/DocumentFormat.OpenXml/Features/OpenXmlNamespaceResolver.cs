@@ -5,53 +5,23 @@ using DocumentFormat.OpenXml.Framework;
 using System.Collections.Generic;
 using System.Xml;
 
-namespace DocumentFormat.OpenXml.Features
+namespace DocumentFormat.OpenXml.Features;
+
+internal partial class OpenXmlNamespaceResolver : IOpenXmlNamespaceResolver
 {
-    internal partial class OpenXmlNamespaceResolver : IOpenXmlNamespaceResolver
+    // The namespaces listed here are somewhat obsolete ones that we need to support. Before we try to get the index of a namespace,
+    // we check if it's in this list to rename to the expected correct namespace.
+    private readonly Dictionary<OpenXmlNamespace, OpenXmlNamespace> _extendedNamespaces;
+
+    // This dictionary contains the Strict and Transitional namespaces pairs to be interpreted equivalent.
+    private readonly Dictionary<OpenXmlNamespace, OpenXmlNamespace> _strictTransitionalNamespaces;
+
+    // This dictionary contains the Strict and Transitional relationship pairs to be interpreted equivalent.
+    private readonly Dictionary<OpenXmlNamespace, OpenXmlNamespace> _strictTransitionalRelationshipPairs;
+
+    public OpenXmlNamespaceResolver()
     {
-        private static string NormalizeNamespace(in OpenXmlNamespace ns)
-        {
-            if (ns.TryGetExtendedNamespace(out var result))
-            {
-                return result.Uri;
-            }
-
-            return ns.Uri;
-        }
-
-        public IDictionary<string, string> GetNamespacesInScope(XmlNamespaceScope scope) => _urlToPrefix;
-
-        public string? LookupNamespace(string prefix) => _prefixToUrl.TryGetValue(prefix, out var result) ? result : null;
-
-        public string? LookupPrefix(string namespaceName) => _urlToPrefix.TryGetValue(namespaceName, out var result) ? result : null;
-
-        /// <inheritdoc />
-        public bool TryGetTransitionalNamespace(OpenXmlNamespace ns, out OpenXmlNamespace transitionalNamespace)
-            => _strictTransitionalNamespaces.TryGetValue(ns.Uri, out transitionalNamespace);
-
-        /// <inheritdoc />
-        public bool TryGetTransitionalRelationship(OpenXmlNamespace ns, out OpenXmlNamespace transitionalRelationship)
-            => _strictTransitionalRelationshipPairs.TryGetValue(ns.Uri, out transitionalRelationship);
-
-        /// <inheritdoc />
-        public bool TryGetExtendedNamespace(OpenXmlNamespace ns, out OpenXmlNamespace extNamespaceUri)
-            => _extendedNamespaces.TryGetValue(ns.Uri, out extNamespaceUri);
-
-        /// <inheritdoc />
-        public FileFormatVersions GetVersion(OpenXmlNamespace ns)
-        {
-            var normalized = NormalizeNamespace(ns.Uri);
-            if (_urlToPrefix.TryGetValue(normalized, out var prefix) && _prefixToVersion.TryGetValue(prefix, out var version))
-            {
-                return version;
-            }
-
-            return FileFormatVersions.None;
-        }
-
-        // The namespaces listed here are somewhat obsolete ones that we need to support. Before we try to get the index of a namespace,
-        // we check if it's in this list to rename to the expected correct namespace.
-        private readonly Dictionary<OpenXmlNamespace, OpenXmlNamespace> _extendedNamespaces = new Dictionary<OpenXmlNamespace, OpenXmlNamespace>
+        _extendedNamespaces = new()
         {
             { "http://schemas.openxmlformats.org/wordprocessingml/2006/3/main", "http://schemas.openxmlformats.org/wordprocessingml/2006/main" },
             { "http://schemas.openxmlformats.org/wordprocessingml/2006/5/main", "http://schemas.openxmlformats.org/wordprocessingml/2006/main" },
@@ -63,8 +33,7 @@ namespace DocumentFormat.OpenXml.Features
             { "http://schemas.microsoft.com/office/word/2010/11/wordml", "http://schemas.microsoft.com/office/word/2012/wordml" },
         };
 
-        // This dictionary contains the Strict and Transitional namespaces pairs to be interpreted equivalent.
-        private readonly Dictionary<OpenXmlNamespace, OpenXmlNamespace> _strictTransitionalNamespaces = new Dictionary<OpenXmlNamespace, OpenXmlNamespace>
+        _strictTransitionalNamespaces = new()
         {
             // Namespaces
             { "http://purl.oclc.org/ooxml/descriptions/base", "http://descriptions.openxmlformats.org/description/base" },
@@ -101,8 +70,7 @@ namespace DocumentFormat.OpenXml.Features
             { "http://purl.oclc.org/ooxml/officeDocument/relationships/customXml", "http://schemas.openxmlformats.org/officeDocument/2006/customXml" },
         };
 
-        // This dictionary contains the Strict and Transitional relationship pairs to be interpreted equivalent.
-        private readonly Dictionary<OpenXmlNamespace, OpenXmlNamespace> _strictTransitionalRelationshipPairs = new Dictionary<OpenXmlNamespace, OpenXmlNamespace>
+        _strictTransitionalRelationshipPairs = new()
         {
             { "http://purl.oclc.org/ooxml/officeDocument/relationships/aFChunk", "http://schemas.openxmlformats.org/officeDocument/2006/relationships/aFChunk" },
             { "http://purl.oclc.org/ooxml/officeDocument/relationships/attachedTemplate", "http://schemas.openxmlformats.org/officeDocument/2006/relationships/attachedTemplate" },
@@ -184,5 +152,46 @@ namespace DocumentFormat.OpenXml.Features
             { "http://purl.oclc.org/ooxml/officeDocument/relationships/worksheet", "http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" },
             { "http://purl.oclc.org/ooxml/officeDocument/relationships/xmlMaps", "http://schemas.openxmlformats.org/officeDocument/2006/relationships/xmlMaps" },
         };
+    }
+
+    private string NormalizeNamespace(in OpenXmlNamespace ns)
+    {
+        if (TryGetExtendedNamespace(ns, out var result))
+        {
+            return result.Uri;
+        }
+
+        return ns.Uri;
+    }
+
+    public IDictionary<string, string> GetNamespacesInScope(XmlNamespaceScope scope) => _urlToPrefix;
+
+    public string? LookupNamespace(string prefix) => _prefixToUrl.TryGetValue(prefix, out var result) ? result : null;
+
+    public string? LookupPrefix(string namespaceName) => _urlToPrefix.TryGetValue(namespaceName, out var result) ? result : null;
+
+    /// <inheritdoc />
+    public bool TryGetTransitionalNamespace(OpenXmlNamespace ns, out OpenXmlNamespace transitionalNamespace)
+        => _strictTransitionalNamespaces.TryGetValue(ns, out transitionalNamespace);
+
+    /// <inheritdoc />
+    public bool TryGetTransitionalRelationship(OpenXmlNamespace ns, out OpenXmlNamespace transitionalRelationship)
+        => _strictTransitionalRelationshipPairs.TryGetValue(ns, out transitionalRelationship);
+
+    /// <inheritdoc />
+    public bool TryGetExtendedNamespace(OpenXmlNamespace ns, out OpenXmlNamespace extNamespaceUri)
+        => _extendedNamespaces.TryGetValue(ns, out extNamespaceUri);
+
+    /// <inheritdoc />
+    public FileFormatVersions GetVersion(OpenXmlNamespace ns)
+    {
+        var normalized = NormalizeNamespace(ns);
+
+        if (_urlToPrefix.TryGetValue(normalized, out var prefix) && _prefixToVersion.TryGetValue(prefix, out var version))
+        {
+            return version;
+        }
+
+        return FileFormatVersions.None;
     }
 }

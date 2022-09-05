@@ -6,17 +6,28 @@ using Microsoft.CodeAnalysis;
 namespace DocumentFormat.OpenXml.Generator.NamespaceGeneration;
 
 [Generator]
-public class NamespaceGenerator : ISourceGenerator
+public class NamespaceGenerator : IIncrementalGenerator
 {
-    public void Execute(GeneratorExecutionContext context)
-    {
-        if (context.AnalyzerConfigOptions.GlobalOptions.TryGetValue("build_property.DocumentFormat_OpenXml_GeneratorNamespaceLookup", out var generatorSwitch) && bool.TryParse(generatorSwitch, out var result) && result)
-        {
-            context.AddSource("Namespaces", OpenXmlGeneratorContext.Shared.Namespaces.Generate());
-        }
-    }
+    private static readonly DiagnosticDescriptor MalformedDataFileDescriptor = new("OOX3000", "Malformed data file", "Failed to load data file", "Data", DiagnosticSeverity.Error, isEnabledByDefault: true);
 
-    public void Initialize(GeneratorInitializationContext context)
+    public void Initialize(IncrementalGeneratorInitializationContext context)
     {
+        var namespaces = context.GetOpenXmlDataFiles().GetKnownNamespaces();
+        var shouldGenerate = context.GetOpenXmlOptions().Select(static (o, _) => o.GenerateNamespaces);
+
+        context.RegisterSourceOutput(namespaces.Combine(shouldGenerate), static (context, data) =>
+        {
+            try
+            {
+                if (data.Right)
+                {
+                    context.AddSource("Namespaces", data.Left.Generate());
+                }
+            }
+            catch (Exception)
+            {
+                context.ReportDiagnostic(Diagnostic.Create(MalformedDataFileDescriptor, location: null));
+            }
+        });
     }
 }

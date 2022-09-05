@@ -58,12 +58,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Condition=" '$(TargetFramework)' == 'net35' " Include="jnm2.ReferenceAssemblies.net35" Version="1.0.1" PrivateAssets="All" />
-
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.0" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
-
-  <Import Project="$(MSBuildThisFileDirectory)\Tests.targets" />
 
   <!-- The tool is used by default, but we don't want it to. It must be set in a target to ensure it is not overridden -->
   <Target Name="BeforeResGen" Condition=" '$(TargetFramework)' == 'net35' ">
@@ -83,4 +82,8 @@
     <PackageOutputPath>$(MSBuildThisFileDirectory)bin\$(Configuration)\packages\</PackageOutputPath>
     <PackageOutputPath Condition="$(IsShipped)">$(PackageOutputPath)shipping\</PackageOutputPath>
   </PropertyGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net35' OR $(TargetFramework.StartsWith('net4'))">
+    <Reference Include="WindowsBase" />
+  </ItemGroup>
 </Project>

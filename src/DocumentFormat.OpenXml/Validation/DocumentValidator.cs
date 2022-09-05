@@ -37,7 +37,7 @@ namespace DocumentFormat.OpenXml.Validation
         /// <returns>Return results in ValidationResult.</returns>
         public List<ValidationErrorInfo> Validate(OpenXmlPackage document, ValidationSettings settings, CancellationToken token)
         {
-            var context = new ValidationContext(settings, _cache, token);
+            var context = new ValidationContext(document.Features.GetNamespaceResolver(), settings, _cache, token);
 
             using (context.Stack.Push(document))
             {
@@ -65,7 +65,7 @@ namespace DocumentFormat.OpenXml.Validation
         /// <returns></returns>
         public List<ValidationErrorInfo> Validate(OpenXmlPart part, ValidationSettings settings, CancellationToken token)
         {
-            var context = new ValidationContext(settings, _cache, token);
+            var context = new ValidationContext(part.Features.GetNamespaceResolver(), settings, _cache, token);
 
             ValidatePart(part, context);
 
@@ -98,7 +98,7 @@ namespace DocumentFormat.OpenXml.Validation
                     if (!partRootElementLoaded && context.Errors.Count == lastErrorCount)
                     {
                         // No new errors in this part. Release the DOM to GC memory.
-                        part.SetPartRootElementToNull();
+                        part.UnloadRootElement();
                     }
                 }
             }

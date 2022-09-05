@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using DocumentFormat.OpenXml.Features;
 using DocumentFormat.OpenXml.Framework;
 using System;
 using System.Collections.Generic;
@@ -411,7 +412,7 @@ namespace DocumentFormat.OpenXml.Packaging
 
             try
             {
-                ChangeDocumentTypeInternal<PresentationPart>();
+                ChangeDocumentTypeInternal(static () => new PresentationPart());
             }
             catch (OpenXmlPackageException e)
             {
@@ -782,5 +783,7 @@ namespace DocumentFormat.OpenXml.Packaging
         #endregion Package-based cloning
 
         #endregion cloning
+
+        internal override IFeatureCollection CreatePartFeatures(IFeatureCollection? other) => new PartContainerFeatureCollection(TypedFeatures.Shared, other);
     }
 }

@@ -113,6 +113,8 @@ namespace DocumentFormat.OpenXml.Features
 
         internal static IFeatureCollection Default => DefaultFeatures.Shared;
 
+        internal static IFeatureCollection TypedOrDefault => TypedFeatures.Shared;
+
         private class EmptyFeatures : IFeatureCollection
         {
             public bool IsReadOnly => true;

@@ -24,7 +24,6 @@ The Open XML SDK provides tools for working with Office Word, Excel, and PowerPo
 - [Known Issues](#known-issues)
 - [Documentation](#documentation)
 - [Related tools](#related-tools)
-- [Code of Conduct](#code-of-conduct)
 
 # Packages
 
@@ -68,12 +67,6 @@ The package currently supports the following frameworks:
 
 For details on platform support, please see the docs at https://docs.microsoft.com/en-us/dotnet/standard/net-standard.
 
-# If You Have Problems
-
-If you want to report a problem (bug, behavior, build, distribution, feature request, etc...) with the SDK built by this repository, please feel free to post a new issue and someone will try to help.
-
-If you have "how-to" questions please post to one of the following resources:
-
 - [Microsoft Q&A Forums](https://docs.microsoft.com/en-us/answers/topics/office-addins-dev.html) (tag: **office-addins-dev**)
 - [Stack Overflow](http://stackoverflow.com) (tags: **openxml** or **openxml-sdk**)
 
@@ -94,6 +87,7 @@ In addition to open sourcing of the SDK, Microsoft has opened up the conceptual 
 - **[Open XML SDK 2.5 Productivity Tool](https://github.com/OfficeDev/Open-XML-SDK/releases/tag/v2.5)**: The Productivity Tool provides viewing and code generation compatible with the Open XML SDK 2.5.
 - **[Open XML Powertools](https://github.com/EricWhiteDev/Open-Xml-PowerTools)**: This provides example code and guidance for implementing a wide range of Open XML scenarios.
 - **[ClosedXml](https://github.com/closedxml/closedxml)**: This library provides a simplified object model on top of the OpenXml SDK for manipulating and creating Excel documents.
+- **[OfficeIMO](https://github.com/EvotecIT/OfficeIMO)**: This library provides a simplified object model on top of the OpenXml SDK manipulating and creating Word documents.
 - **[Serialize.OpenXml.CodeGen](https://github.com/rmboggs/Serialize.OpenXml.CodeGen)**: This is a tool that converts an OpenXml document into the .NET code required to create it.
 - **[Html2OpenXml](https://github.com/onizet/html2openxml)**: This is a tool that takes HTML and converts it to an OpenXml document.
 - **[DocxToSource](https://github.com/rmboggs/DocxToSource)**: This is a tool designed to be a replacement for the old OpenXML SDK Productivity Tool.
@@ -101,6 +95,21 @@ In addition to open sourcing of the SDK, Microsoft has opened up the conceptual 
 - **[ShapeCrawler](https://github.com/ShapeCrawler/ShapeCrawler)**: This library provides a simplified object model on top of the OpenXml SDK to manipulate PowerPoint documents.
 - **[OOXML Validator](https://github.com/mikeebowen/ooxml-validator-vscode)**: VS Code extension to validate Office Open XML files.  Search "OOXML" in the VS Code extensions tab or download it from the [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=mikeebowen.ooxml-validator-vscode)
 
-# Code of Conduct
+# How can I contribute?
 
-This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/). For more information, see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
+We welcome contributions! Many people all over the world have helped make this project better.
+
+- [Contributing](./CONTRIBUTING.md) explains what kinds of contributions we welcome
+
+# Reporting security issues and security bugs
+
+Security issues and bugs should be reported privately, via email, to the Microsoft Security Response Center (MSRC) secure@microsoft.com. You should receive a response within 24 hours. If for some reason you do not, please follow up via email to ensure we received your original message. Further information, including the MSRC PGP key, can be found in the [Security TechCenter](https://www.microsoft.com/en-us/msrc/faqs-report-an-issue?rtc=1).
+
+# .NET Foundation
+The Open XML SDK is a [.NET Foundation](https://dotnetfoundation.org/projects) project.
+
+This project has adopted the code of conduct defined by the [Contributor Covenant](https://www.contributor-covenant.org/) to clarify expected behavior in our community. For more information, see the [.NET Foundation Code of Conduct](https://dotnetfoundation.org/about/code-of-conduct).
+
+# License
+
+The Open XML SDK is licensed under the [MIT](./LICENSE) license.

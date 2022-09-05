@@ -12,7 +12,7 @@ namespace DocumentFormat.OpenXml.Framework.Tests
         public void NamespaceCount()
         {
             var resolver = new OpenXmlNamespaceResolver();
-            Assert.Equal(145, resolver.GetNamespacesInScope(System.Xml.XmlNamespaceScope.All).Count);
+            Assert.Equal(148, resolver.GetNamespacesInScope(System.Xml.XmlNamespaceScope.All).Count);
         }
 
         [InlineData("", "", FileFormatVersions.Office2007, 0)]
@@ -105,18 +105,23 @@ namespace DocumentFormat.OpenXml.Framework.Tests
         [Theory]
         public void NamespacePrefixTest(string ns, string prefix, FileFormatVersions version, byte id)
         {
+            var resolver = new OpenXmlNamespaceResolver();
+            var idResolver = new OpenXmlNamespaceIdResolver();
+
+            var idPrefix = idResolver.GetPrefix(id);
+            var idUri = resolver.LookupNamespace(idPrefix);
+
             var nsFromNs = new OpenXmlNamespace(ns);
-            var nsFromId = new OpenXmlNamespace(id);
+            var nsFromId = new OpenXmlNamespace(idUri);
 
             Assert.Equal(nsFromNs, nsFromId);
-            Assert.Equal(prefix, nsFromNs.Prefix);
-            Assert.Equal(prefix, nsFromId.Prefix);
-            Assert.Equal(ns, OpenXmlNamespace.GetNamespaceUri(prefix));
+            Assert.Equal(ns, resolver.LookupNamespace(prefix));
+            Assert.Equal(prefix, resolver.LookupPrefix(ns));
 
             foreach (var v in FileFormatVersionExtensions.AllVersions)
             {
-                Assert.Equal(v == version, nsFromNs.Version == v);
-                Assert.Equal(v == version, nsFromNs.HasVersion(v));
+                Assert.Equal(v == version, resolver.GetVersion(nsFromNs) == v);
+                Assert.Equal(v == version, resolver.HasVersion(nsFromNs, v));
             }
         }
     }

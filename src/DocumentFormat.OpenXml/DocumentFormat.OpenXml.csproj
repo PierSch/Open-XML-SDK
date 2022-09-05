@@ -8,7 +8,9 @@
 
   <PropertyGroup>
     <IncludeSourceGenerator>true</IncludeSourceGenerator>
-    <DocumentFormat_OpenXml_GeneratorNamespaceLookup>true</DocumentFormat_OpenXml_GeneratorNamespaceLookup>
+    <DocumentFormat_OpenXml_Generator_NamespaceLookup>true</DocumentFormat_OpenXml_Generator_NamespaceLookup>
+    <DocumentFormat_OpenXml_Generator_Parts>true</DocumentFormat_OpenXml_Generator_Parts>
+    <DocumentFormat_OpenXml_Generator_Schemas>true</DocumentFormat_OpenXml_Generator_Schemas>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -118,11 +120,6 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>ValidationResources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-  </ItemGroup>
-
-  <ItemGroup>
-    <AdditionalFiles Include="PublicAPI\$(TargetFramework)\PublicAPI.Shipped.txt" />
-    <AdditionalFiles Include="PublicAPI\PublicAPI.Unshipped.txt" />
   </ItemGroup>
 
   <Import Project="$(MSBuildThisFileDirectory)\PEVerify.targets" />

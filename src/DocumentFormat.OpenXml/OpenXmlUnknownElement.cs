@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using DocumentFormat.OpenXml.Features;
 using DocumentFormat.OpenXml.Framework;
 using System;
 using System.Diagnostics;
@@ -47,10 +48,10 @@ namespace DocumentFormat.OpenXml
                 throw new ArgumentNullException(nameof(name));
             }
 
-            var schema = OpenXmlQualifiedName.Parse(name);
+            var parsed = PrefixName.Parse(name);
 
-            _prefix = schema.Namespace.Prefix;
-            _tagName = schema.Name;
+            _prefix = parsed.Prefix;
+            _tagName = parsed.Name;
         }
 
         /// <summary>
@@ -67,15 +68,15 @@ namespace DocumentFormat.OpenXml
                 throw new ArgumentNullException(nameof(qualifiedName));
             }
 
-            var schema = OpenXmlQualifiedName.Parse(qualifiedName);
+            var parsed = PrefixName.Parse(qualifiedName);
 
-            _prefix = schema.Namespace.Prefix;
-            _tagName = schema.Name;
+            _prefix = parsed.Prefix;
+            _tagName = parsed.Name;
             _namespaceUri = namespaceUri;
         }
 
-        internal OpenXmlUnknownElement(in OpenXmlQualifiedName qname)
-            : this(qname.Namespace.Prefix, qname.Name, qname.Namespace.Uri)
+        internal OpenXmlUnknownElement(in OpenXmlQualifiedName qname, string prefix)
+            : this(prefix, qname.Name, qname.Namespace.Uri)
         {
         }
 
@@ -122,7 +123,7 @@ namespace DocumentFormat.OpenXml
             }
 
             TextReader stringReader = new StringReader(outerXml);
-            using (XmlReader xmlReader = XmlConvertingReaderFactory.Create(stringReader, OpenXmlElementContext.CreateDefaultXmlReaderSettings()))
+            using (XmlReader xmlReader = XmlConvertingReaderFactory.Create(stringReader, FeatureCollection.TypedOrDefault.GetNamespaceResolver(), OpenXmlElementContext.CreateDefaultXmlReaderSettings()))
             {
                 // Skip the leading whitespace as OpenXmUnknownlElement ignores the Whitespace NodeType.
                 do

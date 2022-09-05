@@ -93,7 +93,7 @@ namespace DocumentFormat.OpenXml.Packaging
             openXmlPackage.ReserveUri(ContentType, Uri);
 
             // load recursively
-            var relationshipCollection = new PackagePartRelationshipPropertyCollection(PackagePart);
+            var relationshipCollection = new PackagePartRelationshipPropertyCollection(PackagePart, Features.GetNamespaceResolver());
             LoadReferencedPartsAndRelationships(openXmlPackage, this, relationshipCollection, loadedParts);
         }
 
@@ -351,6 +351,24 @@ namespace DocumentFormat.OpenXml.Packaging
             sourceStream.CopyTo(targetStream);
         }
 
+        /// <summary>
+        /// Unloads the RootElement.
+        /// </summary>
+        /// <returns>The unloaded RootElement</returns>
+        /// <remarks>
+        /// Releases the DOM so the memory can be GC'ed.
+        /// </remarks>
+        public OpenXmlPartRootElement? UnloadRootElement()
+        {
+            var rootElement = InternalRootElement;
+            if (InternalRootElement is not null)
+            {
+                InternalRootElement = null;
+            }
+
+            return rootElement;
+        }
+
         #endregion
 
         #region public virtual methods / properties
@@ -405,7 +423,7 @@ namespace DocumentFormat.OpenXml.Packaging
             {
                 xmlReaderSettings.ValidationEventHandler += validationEventHandler;
 
-                using (var xmlReader = XmlConvertingReaderFactory.Create(partStream, xmlReaderSettings))
+                using (var xmlReader = XmlConvertingReaderFactory.Create(partStream, Features.GetNamespaceResolver(), xmlReaderSettings))
                 {
                     // Validate XML data
                     while (xmlReader.Read())
@@ -599,24 +617,6 @@ namespace DocumentFormat.OpenXml.Packaging
         public bool IsRootElementLoaded => InternalRootElement is not null;
 
         /// <summary>
-        /// Sets the PartRootElement to null.
-        /// </summary>
-        /// <returns></returns>
-        /// <remarks>
-        /// Used by validator. To release the DOM and so the memory can be GC'ed.
-        /// </remarks>
-        internal OpenXmlPartRootElement? SetPartRootElementToNull()
-        {
-            var rootElement = InternalRootElement;
-            if (InternalRootElement is not null)
-            {
-                InternalRootElement = null;
-            }
-
-            return rootElement;
-        }
-
-        /// <summary>
         /// Load the DOM tree. And associate the DOM tree with this part.
         /// Only used for generated part classes which derive from this OpenXmlBasePart.
         /// </summary>
@@ -792,7 +792,17 @@ namespace DocumentFormat.OpenXml.Packaging
             {
                 if (_features is null)
                 {
-                    _features = new FeatureCollection(new PartContainerFeatureCollection(_openXmlPackage?.Features));
+                    if (_openXmlPackage is { } package)
+                    {
+                        _features = package.CreatePartFeatures(package.Features);
+                    }
+                    else
+                    {
+                        _features = CreatePartFeatures();
+                    }
+
+                    // Make writeable
+                    _features = new FeatureCollection(_features);
                 }
 
                 return _features;

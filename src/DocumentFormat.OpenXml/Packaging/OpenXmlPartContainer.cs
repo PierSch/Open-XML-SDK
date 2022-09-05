@@ -1078,7 +1078,7 @@ namespace DocumentFormat.OpenXml.Packaging
             ThrowIfObjectDisposed();
 
             // use reflection to create the instance. As the default constructor of part is not "public"
-            var part = ClassActivator.CreateInstance<T>();
+            var part = Features.GetRequired<IPartFactory>().Create<T>();
 
             try
             {
@@ -1138,7 +1138,7 @@ namespace DocumentFormat.OpenXml.Packaging
             }
 
             // Use reflection to create the instance as the default constructor of part is not public
-            var part = ClassActivator.CreateInstance<T>();
+            var part = Features.GetRequired<IPartFactory>().Create<T>();
 
             if (part is ExtendedPart)
             {
@@ -1942,29 +1942,33 @@ namespace DocumentFormat.OpenXml.Packaging
             {
                 if (_features is null)
                 {
-                    _features = new FeatureCollection(new PartContainerFeatureCollection());
+                    _features = new FeatureCollection(CreatePartFeatures());
                 }
 
                 return _features;
             }
         }
 
-        private protected sealed partial class PartContainerFeatureCollection : IFeatureCollection
+        internal virtual IFeatureCollection CreatePartFeatures(IFeatureCollection? other = null) => new PartContainerFeatureCollection(FeatureCollection.Default, other);
+
+        internal sealed partial class PartContainerFeatureCollection : IFeatureCollection
         {
             private readonly IFeatureCollection? _other;
+            private readonly IFeatureCollection _defaultCollection;
 
             public bool IsReadOnly => true;
 
             public int Revision => 0;
 
-            public PartContainerFeatureCollection(IFeatureCollection? other = null)
+            public PartContainerFeatureCollection(IFeatureCollection defaultCollection, IFeatureCollection? other = null)
             {
                 _other = other;
+                _defaultCollection = defaultCollection;
             }
 
             [KnownFeature(typeof(AnnotationsFeature))]
             [DelegatedFeature(nameof(_other))]
-            [DelegatedFeature(nameof(FeatureCollection.Default), typeof(FeatureCollection))]
+            [DelegatedFeature(nameof(_defaultCollection))]
             public partial TFeature? Get<TFeature>();
 
             public void Set<TFeature>(TFeature? instance)

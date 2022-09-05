@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using DocumentFormat.OpenXml.Features;
 using DocumentFormat.OpenXml.Framework;
 using System;
 
@@ -29,7 +30,11 @@ namespace DocumentFormat.OpenXml
                 throw new ArgumentNullException(nameof(tag));
             }
 
-            _qname = new OpenXmlQualifiedName(new OpenXmlNamespace(nsId), tag);
+            var features = FeatureCollection.TypedOrDefault;
+            var prefix = features.GetRequired<IOpenXmlNamespaceIdResolver>().GetPrefix(nsId);
+            var uri = features.GetRequired<IOpenXmlNamespaceResolver>().LookupNamespace(prefix);
+
+            _qname = new OpenXmlQualifiedName(uri ?? string.Empty, tag);
         }
 
         /// <summary>
@@ -44,7 +49,7 @@ namespace DocumentFormat.OpenXml
                 throw new ArgumentNullException(nameof(qname));
             }
 
-            _qname = qname;
+            _qname = FeatureCollection.TypedOrDefault.GetNamespaceResolver().ParseQName(qname);
         }
 
         /// <summary>
@@ -59,7 +64,7 @@ namespace DocumentFormat.OpenXml
                 throw new ArgumentNullException(nameof(tag));
             }
 
-            _qname = new OpenXmlQualifiedName(ns, tag);
+            _qname = new(ns, tag);
         }
 
         /// <summary>
